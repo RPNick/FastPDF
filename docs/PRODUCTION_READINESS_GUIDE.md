@@ -500,7 +500,7 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Docker Hub login (recommended default)
       - name: Login to Docker Hub
@@ -900,7 +900,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
