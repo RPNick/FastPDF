@@ -562,6 +562,8 @@ FASTPDF_JWT_SECRET=another-strong-secret-at-least-32-chars
 
 ### 8b. Add the FastPDF service to `docker-compose.yml` (Sail)
 
+#### Option 1: Build locally
+
 ```yaml
 services:
   # ... your existing laravel.test service ...
@@ -570,6 +572,39 @@ services:
     build:
       context: ./services/fast-pdf   # path to a copy/clone of this repo
       dockerfile: Dockerfile
+    ports:
+      - '${FASTPDF_PORT:-2626}:2626'
+    environment:
+      NODE_ENV: production
+      PORT: 2626
+      HOST: 0.0.0.0
+      LOG_LEVEL: info
+      AUTH_PASSWORD: '${FASTPDF_PASSWORD}'
+      JWT_SECRET: '${FASTPDF_JWT_SECRET}'
+      JWT_EXPIRES_IN: 1d
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+      SENTRY_DSN: '${SENTRY_DSN}'
+      SENTRY_TRACES_SAMPLE_RATE: 1.0
+    networks:
+      - sail
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'node', '-e', "require('http').get('http://localhost:2626/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+```
+
+#### Option 2: Pull from Docker Hub
+
+```yaml
+services:
+  # ... your existing laravel.test service ...
+
+  fast-pdf:
+    image: surenick/fast-pdf:latest
     ports:
       - '${FASTPDF_PORT:-2626}:2626'
     environment:
