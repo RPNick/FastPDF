@@ -21,23 +21,18 @@ jobs:
         id: package-version
         run: echo "version=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
 
-      # Docker Hub login (recommended default)
+      - name: Ensure package version is set
+        run: |
+          if [ -z "${{ steps.package-version.outputs.version }}" ]; then
+            echo "Package version is empty. Aborting."
+            exit 1
+          fi
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: surenick/fast-pdf
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ steps.package-version.outputs.version }}
-            type=raw,value=build-${{ github.run_number }}
-            type=sha
 
       - name: Build and push
         id: build-and-push
@@ -45,11 +40,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/fastpdf:${{ steps.package-version.outputs.version }}
 
       - name: Show published image refs
         run: |
-          echo "Published tags:"
-          echo "${{ steps.meta.outputs.tags }}"
+          echo "Published tag: ${{ secrets.DOCKER_USERNAME }}/fastpdf:${{ steps.package-version.outputs.version }}"
           echo "Digest: ${{ steps.build-and-push.outputs.digest }}"
