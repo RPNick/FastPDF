@@ -268,7 +268,7 @@ Replace the current single-stage Dockerfile with a multi-stage build that:
 
 ```dockerfile
 # Stage 1: build
-FROM node:20-slim AS builder
+FROM node:24-slim AS builder
 WORKDIR /build
 COPY package*.json ./
 RUN npm ci
@@ -276,7 +276,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: runtime
-FROM node:20-slim AS runtime
+FROM node:24-slim AS runtime
 
 # Chromium and its dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \

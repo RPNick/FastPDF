@@ -1,5 +1,5 @@
 # ---- build stage ----
-FROM node:20-slim AS builder
+FROM node:24-slim AS builder
 WORKDIR /build
 COPY package*.json ./
 RUN npm ci
@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 
 # ---- runtime stage ----
-FROM node:20-slim AS runtime
+FROM node:24-slim AS runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     dumb-init \
