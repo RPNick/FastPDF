@@ -19,6 +19,11 @@ const OptionalSentryDsn = z.preprocess((value) => {
         return undefined;
     }
 
+    const lower = trimmed.toLowerCase();
+    if (lower === 'null' || lower === 'undefined') {
+        return undefined;
+    }
+
     // Ignore doc-style placeholders like https://<key>@o<org>.ingest.sentry.io/<project>
     if (trimmed.includes('<') || trimmed.includes('>')) {
         return undefined;
