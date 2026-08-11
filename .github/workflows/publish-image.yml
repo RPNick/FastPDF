@@ -19,7 +19,11 @@ jobs:
 
       - name: Get package version
         id: package_version
-        run: echo "version=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
+        run: |
+          repo_root="${GITHUB_WORKSPACE:-$(git rev-parse --show-toplevel)}"
+          version=$(node -p "require(process.argv[1]).version" "$repo_root/package.json")
+          output_file="${GITHUB_OUTPUT:-/tmp/github_output.txt}"
+          echo "version=$version" >> "$output_file"
 
       - name: Ensure package version is set
         run: |
