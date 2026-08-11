@@ -5,7 +5,7 @@ import { trace, SpanStatusCode } from '@opentelemetry/api';
 import { existsSync } from 'node:fs';
 
 const logger = pino();
-const tracer = trace.getTracer('fastpdf.pdf-render');
+const tracer = trace.getTracer('fast-pdf.pdf-render');
 
 class Semaphore {
   private permits: number;

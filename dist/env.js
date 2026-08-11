@@ -13,7 +13,7 @@ const EnvSchema = zod_1.z.object({
     MAX_HTML_SIZE: zod_1.z.coerce.number().int().positive().default(5 * 1024 * 1024),
     PUPPETEER_EXECUTABLE_PATH: zod_1.z.string().optional(),
     OTEL_EXPORTER_OTLP_ENDPOINT: zod_1.z.string().url().optional(),
-    OTEL_SERVICE_NAME: zod_1.z.string().default('fastpdf'),
+    OTEL_SERVICE_NAME: zod_1.z.string().default('fast-pdf'),
     SENTRY_DSN: zod_1.z.string().url().optional(),
     SENTRY_TRACES_SAMPLE_RATE: zod_1.z.coerce.number().min(0).max(1).default(1.0),
     RATE_LIMIT_MAX: zod_1.z.coerce.number().int().positive().default(60),

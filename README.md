@@ -113,13 +113,13 @@ Optional flags:
 1. Build the image:
 
 ```bash
-docker build -t fastpdf .
+docker build -t fast-pdf .
 ```
 
 2. Run the container and expose the service on port 2626:
 
 ```bash
-docker run --rm -p 2626:2626 --env-file .env fastpdf
+docker run --rm -p 2626:2626 --env-file .env fast-pdf
 ```
 
 3. Verify the service is healthy:
@@ -176,7 +176,7 @@ Copy from `.env.example`, then adjust values for your environment.
 | `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD` | No | `false` | Controls Chromium download behavior during Puppeteer install/build workflows. |
 | `SENTRY_DSN` | No | empty | Optional Sentry DSN. If empty, telemetry export is disabled. |
 | `SENTRY_TRACES_SAMPLE_RATE` | No | `1.0` | Trace sampling rate for telemetry, from `0.0` to `1.0`. |
-| `OTEL_SERVICE_NAME` | No | `fastpdf` | Service name attached to telemetry data. |
+| `OTEL_SERVICE_NAME` | No | `fast-pdf` | Service name attached to telemetry data. |
 
 Notes:
 - `AUTH_PASSWORD` and `JWT_SECRET` must be set to strong values before startup.

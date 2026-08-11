@@ -5,17 +5,17 @@
 # Triggered by GitHub Actions via SSH, or run manually by the forge user.
 #
 # Expected on the server:
-#   /home/forge/fastpdf/docker-compose.yml
-#   /home/forge/fastpdf/.env          (mode 0600, owned by forge)
+#   /home/forge/fast-pdf/docker-compose.yml
+#   /home/forge/fast-pdf/.env          (mode 0600, owned by forge)
 #
 # Usage: bash scripts/forge-deploy.sh [IMAGE_TAG]
 #   IMAGE_TAG defaults to "latest"
 
 set -euo pipefail
 
-DEPLOY_DIR="/home/forge/fastpdf"
+DEPLOY_DIR="/home/forge/fast-pdf"
 IMAGE_TAG="${1:-latest}"
-DOCKER_IMAGE="${DOCKER_IMAGE:-yourorg/fastpdf}"
+DOCKER_IMAGE="${DOCKER_IMAGE:-surenick/fast-pdf}"
 HEALTH_URL="http://localhost:2626/health"
 HEALTH_RETRIES=10
 HEALTH_SLEEP=3

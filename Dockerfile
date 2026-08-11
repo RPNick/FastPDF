@@ -27,8 +27,8 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder /build/dist ./dist
 
 # Non-root user
-RUN useradd -m -u 10001 -s /bin/false fastpdf
-USER fastpdf
+RUN useradd -m -u 10001 -s /bin/false fast-pdf
+USER fast-pdf
 
 ENV NODE_ENV=production \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \

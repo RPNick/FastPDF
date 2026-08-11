@@ -1,6 +1,6 @@
 {
   "name": "fast-pdf",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "HTML to PDF conversion service using Fastify and Puppeteer",
   "main": "dist/server.js",
   "scripts": {
@@ -8,8 +8,7 @@
     "start": "node dist/server.js",
     "dev": "NODE_ENV=development tsx src/server.ts",
     "watch": "tsc --watch",
-    "test": "tsx --test test/test.ts",
-    "docker:build": "docker build -t fast-pdf:$npm_package_version -t fast-pdf:latest ."
+    "test": "tsx --test test/test.ts"
   },
   "keywords": [],
   "author": "",

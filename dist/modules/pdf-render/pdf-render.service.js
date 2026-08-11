@@ -7,7 +7,7 @@ const puppeteer_1 = __importDefault(require("puppeteer"));
 const pino_1 = __importDefault(require("pino"));
 const api_1 = require("@opentelemetry/api");
 const logger = (0, pino_1.default)();
-const tracer = api_1.trace.getTracer('fastpdf.pdf-render');
+const tracer = api_1.trace.getTracer('fast-pdf.pdf-render');
 class Semaphore {
     constructor(permits) {
         this.queue = [];

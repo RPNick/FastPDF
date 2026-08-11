@@ -68,7 +68,7 @@ const EnvSchema = z.object({
   JWT_EXPIRES_IN: z.string().default('1d'),
   MAX_HTML_SIZE: z.coerce.number().default(5 * 1024 * 1024),
   PUPPETEER_EXECUTABLE_PATH: z.string().optional(),
-  OTEL_SERVICE_NAME: z.string().default('fastpdf'),
+  OTEL_SERVICE_NAME: z.string().default('fast-pdf'),
   SENTRY_DSN: z.string().url().optional(),
   SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(1.0),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(60),
@@ -182,7 +182,7 @@ OTel must be the **first import** so it can monkey-patch Node internals before o
 import 'dotenv/config';
 import { initTelemetry } from './telemetry.js';
 
-initTelemetry(process.env.OTEL_SERVICE_NAME ?? 'fastpdf');
+initTelemetry(process.env.OTEL_SERVICE_NAME ?? 'fast-pdf');
 // ... rest of server.ts
 ```
 
@@ -193,7 +193,7 @@ In `src/modules/pdf-render/pdf-render.service.ts`, wrap the render call in a spa
 ```typescript
 import { trace, SpanStatusCode } from '@opentelemetry/api';
 
-const tracer = trace.getTracer('fastpdf.pdf-render');
+const tracer = trace.getTracer('fast-pdf.pdf-render');
 
 async renderHTML(request: RenderRequest): Promise<Buffer> {
   return tracer.startActiveSpan('pdf.render', async (span) => {
@@ -297,8 +297,8 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder /build/dist ./dist
 
 # Non-root user
-RUN useradd -m -u 10001 -s /bin/false fastpdf
-USER fastpdf
+RUN useradd -m -u 10001 -s /bin/false fast-pdf
+USER fast-pdf
 
 ENV NODE_ENV=production \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
@@ -471,8 +471,8 @@ Before wiring Laravel Sail and Forge, publish the FastPDF image to a registry an
 
 Pick one registry:
 
-- **Docker Hub**: create `yourorg/fastpdf`
-- **GitHub Container Registry (GHCR)**: uses `ghcr.io/<owner>/fastpdf`
+- **Docker Hub**: create `yourorg/fast-pdf`
+- **GitHub Container Registry (GHCR)**: uses `ghcr.io/<owner>/fast-pdf`
 
 ### 7b. Add GitHub repository secrets
 
@@ -521,7 +521,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: yourorg/fastpdf
+          images: yourorg/fast-pdf
           tags: |
             type=raw,value=latest
             type=sha
@@ -535,15 +535,15 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 ```
 
-If you use GHCR, change `images:` to `ghcr.io/<owner>/fastpdf` and use the GHCR login block.
+If you use GHCR, change `images:` to `ghcr.io/<owner>/fast-pdf` and use the GHCR login block.
 
 ### 7d. Verify the published image
 
 After a push to `main`, confirm `latest` and a SHA tag are present in your registry:
 
 ```bash
-docker pull yourorg/fastpdf:latest
-docker pull yourorg/fastpdf:sha-<short-or-full-commit>
+docker pull yourorg/fast-pdf:latest
+docker pull yourorg/fast-pdf:sha-<short-or-full-commit>
 ```
 
 Use `latest` for simple pull-based deploys, and keep SHA tags for rollback safety.
@@ -555,7 +555,7 @@ Use `latest` for simple pull-based deploys, and keep SHA tags for rollback safet
 ### 8a. Add `.env` values to your Laravel project
 
 ```dotenv
-FASTPDF_URL=http://fastpdf:2626
+FASTPDF_URL=http://fast-pdf:2626
 FASTPDF_PASSWORD=a-strong-shared-secret-at-least-32-chars
 FASTPDF_JWT_SECRET=another-strong-secret-at-least-32-chars
 ```
@@ -566,9 +566,9 @@ FASTPDF_JWT_SECRET=another-strong-secret-at-least-32-chars
 services:
   # ... your existing laravel.test service ...
 
-  fastpdf:
+  fast-pdf:
     build:
-      context: ./services/fastpdf   # path to a copy/clone of this repo
+      context: ./services/fast-pdf   # path to a copy/clone of this repo
       dockerfile: Dockerfile
     ports:
       - '${FASTPDF_PORT:-2626}:2626'
@@ -615,8 +615,8 @@ class FastPdfService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('services.fastpdf.url'), '/');
-        $this->password = config('services.fastpdf.password');
+        $this->baseUrl = rtrim(config('services.fast-pdf.url'), '/');
+        $this->password = config('services.fast-pdf.password');
     }
 
     public function render(string $html, array $options = []): string
@@ -639,7 +639,7 @@ class FastPdfService
 
     private function getToken(): string
     {
-        return Cache::remember('fastpdf.token', now()->addHours(23), function () {
+        return Cache::remember('fast-pdf.token', now()->addHours(23), function () {
             $response = Http::post("{$this->baseUrl}/authenticate", [
                 'password' => $this->password,
             ]);
@@ -657,8 +657,8 @@ class FastPdfService
 Add to `config/services.php`:
 
 ```php
-'fastpdf' => [
-    'url'      => env('FASTPDF_URL', 'http://fastpdf:2626'),
+'fast-pdf' => [
+    'url'      => env('FASTPDF_URL', 'http://fast-pdf:2626'),
     'password' => env('FASTPDF_PASSWORD'),
 ],
 ```
@@ -683,11 +683,11 @@ Both servers are identical and independently healthy; the Laravel app talks to w
 
 ```bash
 # From this repo root
-docker build -t yourorg/fastpdf:latest .
-docker tag yourorg/fastpdf:latest yourorg/fastpdf:$(git rev-parse --short HEAD)
+docker build -t yourorg/fast-pdf:latest .
+docker tag yourorg/fast-pdf:latest yourorg/fast-pdf:$(git rev-parse --short HEAD)
 
-docker push yourorg/fastpdf:latest
-docker push yourorg/fastpdf:$(git rev-parse --short HEAD)
+docker push yourorg/fast-pdf:latest
+docker push yourorg/fast-pdf:$(git rev-parse --short HEAD)
 ```
 
 Use Docker Hub, GHCR, or a private registry. Store credentials in Forge's environment manager.
@@ -702,33 +702,33 @@ In the Forge panel → Server → Daemons → New Daemon:
 
 ```bash
 docker run -d \
-  --name fastpdf \
+  --name fast-pdf \
   --restart unless-stopped \
   -p 2626:2626 \
   -e NODE_ENV=production \
   -e PORT=2626 \
-  -e AUTH_PASSWORD="$(cat /etc/fastpdf/auth_password)" \
-  -e JWT_SECRET="$(cat /etc/fastpdf/jwt_secret)" \
-  -e SENTRY_DSN="$(cat /etc/fastpdf/sentry_dsn)" \
+  -e AUTH_PASSWORD="$(cat /etc/fast-pdf/auth_password)" \
+  -e JWT_SECRET="$(cat /etc/fast-pdf/jwt_secret)" \
+  -e SENTRY_DSN="$(cat /etc/fast-pdf/sentry_dsn)" \
   -e SENTRY_TRACES_SAMPLE_RATE=1.0 \
-  -e OTEL_SERVICE_NAME="fastpdf-prod" \
-  yourorg/fastpdf:latest
+  -e OTEL_SERVICE_NAME="fast-pdf-prod" \
+  yourorg/fast-pdf:latest
 ```
 
-Store secrets in files under `/etc/fastpdf/` (owner: `forge`, mode: `0600`) so they never appear in process listings.
+Store secrets in files under `/etc/fast-pdf/` (owner: `forge`, mode: `0600`) so they never appear in process listings.
 
 **Option B — docker-compose on each server**
 
-Create `/home/forge/fastpdf/docker-compose.yml` on each server:
+Create `/home/forge/fast-pdf/docker-compose.yml` on each server:
 
 ```yaml
 services:
-  fastpdf:
-    image: yourorg/fastpdf:latest
+  fast-pdf:
+    image: yourorg/fast-pdf:latest
     restart: unless-stopped
     ports:
       - '2626:2626'
-    env_file: /home/forge/fastpdf/.env
+    env_file: /home/forge/fast-pdf/.env
     healthcheck:
       test: ['CMD', 'node', '-e', "require('http').get('http://localhost:2626/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
       interval: 30s
@@ -737,7 +737,7 @@ services:
       start_period: 20s
 ```
 
-Create `/home/forge/fastpdf/.env` on each server (set permissions `chmod 600`):
+Create `/home/forge/fast-pdf/.env` on each server (set permissions `chmod 600`):
 
 ```dotenv
 NODE_ENV=production
@@ -750,7 +750,7 @@ PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 SENTRY_DSN=https://<key>@o<org>.ingest.sentry.io/<project>
 SENTRY_TRACES_SAMPLE_RATE=1.0
-OTEL_SERVICE_NAME=fastpdf-prod
+OTEL_SERVICE_NAME=fast-pdf-prod
 ```
 
 Forge deploy script (runs on each deploy):
@@ -759,8 +759,8 @@ Forge deploy script (runs on each deploy):
 #!/bin/bash
 set -euo pipefail
 
-cd /home/forge/fastpdf
-docker pull yourorg/fastpdf:latest
+cd /home/forge/fast-pdf
+docker pull yourorg/fast-pdf:latest
 docker compose up -d --remove-orphans
 docker image prune -f
 ```
@@ -809,7 +809,7 @@ server {
 Because Docker with `restart: unless-stopped` is used, deployments work like this:
 
 ```bash
-docker pull yourorg/fastpdf:latest
+docker pull yourorg/fast-pdf:latest
 docker compose up -d  # replaces running container, new one starts before old stops
 ```
 
@@ -863,9 +863,9 @@ This repository now uses Sentry as the only supported telemetry backend. If you 
 
 - [ ] `AUTH_PASSWORD` and `JWT_SECRET` are at least 32 characters, randomly generated
 - [ ] `SENTRY_DSN` is stored securely (it contains a public key, but treat it as sensitive)
-- [ ] Secrets are stored in Forge's encrypted env manager or `/etc/fastpdf/` files with `0600` permissions, not in `.env` committed to git
+- [ ] Secrets are stored in Forge's encrypted env manager or `/etc/fast-pdf/` files with `0600` permissions, not in `.env` committed to git
 - [ ] Add `.env` to `.gitignore`
-- [ ] Docker container runs as non-root (`fastpdf` user — handled in hardened Dockerfile above)
+- [ ] Docker container runs as non-root (`fast-pdf` user — handled in hardened Dockerfile above)
 - [ ] NGINX enforces TLS (Let's Encrypt via Forge)
 - [ ] `client_max_body_size` limits request size at the NGINX layer
 - [ ] Error responses do not expose stack traces or internal error messages to the client
@@ -913,8 +913,8 @@ jobs:
         with:
           push: true
           tags: |
-            yourorg/fastpdf:latest
-            yourorg/fastpdf:${{ github.sha }}
+            yourorg/fast-pdf:latest
+            yourorg/fast-pdf:${{ github.sha }}
 
   deploy-server-a:
     needs: build-and-push
@@ -927,8 +927,8 @@ jobs:
           username: forge
           key: ${{ secrets.SERVER_A_SSH_KEY }}
           script: |
-            cd /home/forge/fastpdf
-            docker pull yourorg/fastpdf:latest
+            cd /home/forge/fast-pdf
+            docker pull yourorg/fast-pdf:latest
             docker compose up -d --remove-orphans
             docker image prune -f
 
@@ -943,8 +943,8 @@ jobs:
           username: forge
           key: ${{ secrets.SERVER_B_SSH_KEY }}
           script: |
-            cd /home/forge/fastpdf
-            docker pull yourorg/fastpdf:latest
+            cd /home/forge/fast-pdf
+            docker pull yourorg/fast-pdf:latest
             docker compose up -d --remove-orphans
             docker image prune -f
 ```
