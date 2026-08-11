@@ -25,8 +25,6 @@ const PdfRenderController = {
       return reply.send(pdf);
 
     } catch (error) {
-
-
       if (error instanceof z.ZodError) {
         logger.warn({ requestId: request.id, errors: error.issues }, 'Validation error');
         return reply.status(400).send({

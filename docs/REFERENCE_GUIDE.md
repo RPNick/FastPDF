@@ -129,6 +129,15 @@ A typical request follows this path:
 4. The PDF service renders HTML with Puppeteer.
 5. The response is returned as a PDF binary.
 
+## 9. Load-test helpers
+
+The k6 scripts share fixture loading and header helpers in [load-test/shared.js](../load-test/shared.js).
+
+### In this repo
+- [load-test/baseline.js](../load-test/baseline.js)
+- [load-test/stress.js](../load-test/stress.js)
+- [load-test/auth-and-render.js](../load-test/auth-and-render.js)
+
 ## Common commands
 
 ```bash

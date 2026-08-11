@@ -17,6 +17,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Trend, Counter } from 'k6/metrics';
+import { loadHtmlTemplates, materializeHtml } from './shared.js';
 
 const renderDuration = new Trend('pdf_render_duration', true);
 const renderErrors = new Counter('pdf_render_errors');
@@ -38,64 +39,7 @@ const HTML_FIXTURE = `<!DOCTYPE html><html><body>
   <p>Generated at ${new Date().toISOString()}</p>
 </body></html>`;
 
-function resolveFixturePath(filePath) {
-    if (!HTML_FIXTURES_DIR || filePath.startsWith('/')) {
-        return filePath;
-    }
-
-    const dir = HTML_FIXTURES_DIR.replace(/\/+$/, '');
-    return `${dir}/${filePath}`;
-}
-
-function fixturePathCandidates(entry) {
-    const basePath = resolveFixturePath(entry);
-    const candidates = [basePath];
-
-    if (!basePath.startsWith('/') && !basePath.startsWith('../')) {
-        candidates.push(`../${basePath}`);
-    }
-
-    return candidates;
-}
-
-function openFirstAvailable(entry) {
-    const candidates = fixturePathCandidates(entry);
-    let lastError = '';
-
-    for (const candidate of candidates) {
-        try {
-            return open(candidate);
-        } catch (error) {
-            lastError = String(error);
-        }
-    }
-
-    throw new Error(
-        `Failed to load HTML fixture: ${entry}. Tried ${candidates.join(', ')}. ${lastError}`,
-    );
-}
-
-function loadHtmlTemplates() {
-    if (HTML_FIXTURE_FILES.length === 0) {
-        return [HTML_FIXTURE];
-    }
-
-    return HTML_FIXTURE_FILES.map((entry) => openFirstAvailable(entry));
-}
-
-function materializeHtml(template, marker) {
-    const withMarker = template
-        .replace(/VU_PLACEHOLDER/g, marker)
-        .replace(/\{\{VU\}\}/g, marker);
-
-    if (withMarker !== template) {
-        return withMarker;
-    }
-
-    return `${template}\n<!-- k6-doc-id:${marker} -->`;
-}
-
-const HTML_TEMPLATES = loadHtmlTemplates();
+const HTML_TEMPLATES = loadHtmlTemplates(HTML_FIXTURE, HTML_FIXTURE_FILES, HTML_FIXTURES_DIR);
 
 if (HTML_FIXTURE_FILES.length > 0) {
     console.log(`Loaded ${HTML_TEMPLATES.length} HTML fixture(s) for auth-and-render run.`);

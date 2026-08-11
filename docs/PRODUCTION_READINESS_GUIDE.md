@@ -12,34 +12,22 @@ Target deployment:
 
 | # | Task | File(s) | Priority |
 |---|------|---------|----------|
-| 1 | Fix module/CommonJS config mismatch | `package.json`, `tsconfig.json` | 🔴 High |
-| 2 | Add non-root user + multi-stage Docker build | `Dockerfile` | 🔴 High |
-| 3 | Add `HEALTHCHECK` directive to Dockerfile | `Dockerfile` | 🔴 High |
-| 4 | Add startup env validation | `src/server.ts` | 🔴 High |
-| 5 | Implement OpenTelemetry SDK | new: `src/telemetry.ts` | 🔴 High |
-| 6 | Instrument Fastify + Puppeteer with OTel spans | several `src/` files | 🔴 High |
-| 7 | Implement load test suite | `test/load-test.ts` or `load-test/` | 🔴 High |
-| 8 | Add `pdfRenderService` to Fastify type declarations | `src/shared/fastify.d.ts` | 🟡 Medium |
-| 9 | Strip internal error details from client responses | `src/modules/pdf-render/pdf-render.controller.ts` | 🟡 Medium |
-| 10 | Expand unit/integration test coverage | `test/test.ts` | 🟡 Medium |
-| 11 | Add `.env.example` | repo root | 🟡 Medium |
-| 12 | Add `PUPPETEER_EXECUTABLE_PATH` env override | `src/modules/pdf-render/pdf-render.service.ts` | 🟡 Medium |
-| 13 | Add Docker image to Docker Hub or GHCR | CI/CD | 🟡 Medium |
-| 14 | Write Forge deploy script / daemon config | `scripts/` | 🟡 Medium |
-| 15 | Add `X-Request-Id` header passthrough for tracing | `src/app.ts` | 🟠 Low |
-| 16 | Add rate limiting plugin | `src/app.ts` | 🟠 Low |
-| 17 | Add browser instance pool (concurrency ceiling) | `pdf-render.service.ts` | 🟠 Low |
+| 1 | Expand unit/integration test coverage | `test/test.ts` | 🟡 Medium |
+| 2 | Tighten response sanitization | `src/modules/pdf-render/pdf-render.controller.ts` | 🟡 Medium |
+| 3 | Consider a browser pool if load tests show saturation | `src/modules/pdf-render/pdf-render.service.ts` | 🟠 Low |
+
+Most of the original roadmap items in this guide have now been implemented in code.
 
 ---
 
 ## Step 1 — Fix TypeScript / Module Config
 
-**Problem**: `package.json` declares `"type": "module"` but `tsconfig.json` targets `"module": "commonjs"`. This works with `tsx` in dev but breaks the compiled output.
+**Problem**: The project is built as CommonJS output and the runtime entrypoint is `dist/server.js`.
 
-**Fix**: Remove `"type": "module"` from `package.json`, or switch `tsconfig.json` to `"module": "NodeNext"` and update all imports to use explicit `.js` extensions. The simpler fix is to remove the field from `package.json` since the compiled `dist/server.js` is CommonJS.
+**Fix**: Keep the current CommonJS build path unless you intentionally migrate the whole app to ESM.
 
 ```jsonc
-// package.json — remove or delete "type": "module"
+// package.json — current build remains CommonJS
 ```
 
 After the change, verify with:
@@ -53,6 +41,8 @@ npm run build && node dist/server.js
 ## Step 2 — Add Startup Environment Validation
 
 Create `src/env.ts` to validate all required environment variables before the server starts:
+
+The current implementation also normalizes env values, strips inline comments, and treats `SENTRY_DSN=null` or `undefined` as unset.
 
 ```typescript
 // src/env.ts
@@ -176,7 +166,7 @@ export async function shutdownTelemetry(): Promise<void> {
 
 ### 3c. Initialise before anything else in `src/server.ts`
 
-OTel must be the **first import** so it can monkey-patch Node internals before other modules load:
+OTel should initialize before the app starts so Node instrumentation is ready early:
 
 ```typescript
 import 'dotenv/config';
@@ -188,7 +178,7 @@ initTelemetry(process.env.OTEL_SERVICE_NAME ?? 'fast-pdf');
 
 ### 3d. Add manual span around PDF render
 
-In `src/modules/pdf-render/pdf-render.service.ts`, wrap the render call in a span for per-request visibility:
+`src/modules/pdf-render/pdf-render.service.ts` already wraps `renderHTML()` in a span for per-request visibility:
 
 ```typescript
 import { trace, SpanStatusCode } from '@opentelemetry/api';
@@ -218,7 +208,7 @@ async renderHTML(request: RenderRequest): Promise<Buffer> {
 
 ### 3e. Enrich the `/health` endpoint
 
-Update the health route to return structured JSON that is useful to both load balancers and monitoring:
+The health route already returns structured JSON with status, timestamp, uptime, and memory.
 
 ```typescript
 // In health route handler
@@ -345,6 +335,8 @@ Use the existing `setupApp()` pattern from the health check test. No external te
 ## Step 6 — Implement Load Tests
 
 The docs specify a k6-based controller. Here is a practical minimal implementation to start.
+
+The current repo already has [load-test/auth-and-render.js](../load-test/auth-and-render.js), [load-test/baseline.js](../load-test/baseline.js), [load-test/stress.js](../load-test/stress.js), and [load-test/shared.js](../load-test/shared.js).
 
 ### 6a. Install k6
 
@@ -891,6 +883,12 @@ SENTRY_TRACES_SAMPLE_RATE=1.0
 ### 10c. Sentry-only telemetry
 
 This repository now uses Sentry as the only supported telemetry backend. If you do not configure `SENTRY_DSN`, telemetry stays disabled and the service runs without outbound tracing or metrics export.
+
+### 10d. Shared k6 helpers
+
+The k6 load tests now share fixture and header helpers in [load-test/shared.js](../load-test/shared.js).
+
+That file is imported by [load-test/baseline.js](../load-test/baseline.js), [load-test/stress.js](../load-test/stress.js), and [load-test/auth-and-render.js](../load-test/auth-and-render.js).
 
 ---
 

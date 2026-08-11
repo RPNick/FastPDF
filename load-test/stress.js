@@ -21,6 +21,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Trend, Counter, Rate } from 'k6/metrics';
+import { getHeaderValue, loadHtmlTemplates, materializeHtml } from './shared.js';
 
 const renderDuration = new Trend('pdf_render_duration', true);
 const renderErrors = new Counter('pdf_render_errors');
@@ -77,89 +78,7 @@ const HTML_FIXTURE = `<!DOCTYPE html>
   </body>
 </html>`;
 
-function resolveFixturePath(filePath) {
-    if (!HTML_FIXTURES_DIR || filePath.startsWith('/')) {
-        return filePath;
-    }
-
-    const dir = HTML_FIXTURES_DIR.replace(/\/+$/, '');
-    return `${dir}/${filePath}`;
-}
-
-function fixturePathCandidates(entry) {
-    const basePath = resolveFixturePath(entry);
-    const candidates = [basePath];
-
-    // k6 resolves open() paths relative to this script location (load-test/).
-    // Also try project-root-relative form when users pass paths like ./scripts/html/....
-    if (!basePath.startsWith('/') && !basePath.startsWith('../')) {
-        candidates.push(`../${basePath}`);
-    }
-
-    return candidates;
-}
-
-function openFirstAvailable(entry) {
-    const candidates = fixturePathCandidates(entry);
-    let lastError = '';
-
-    for (const candidate of candidates) {
-        try {
-            return open(candidate);
-        } catch (error) {
-            lastError = String(error);
-        }
-    }
-
-    throw new Error(
-        `Failed to load HTML fixture: ${entry}. Tried ${candidates.join(', ')}. ${lastError}`,
-    );
-}
-
-function loadHtmlTemplates() {
-    if (HTML_FIXTURE_FILES.length === 0) {
-        return [HTML_FIXTURE];
-    }
-
-    return HTML_FIXTURE_FILES.map((entry) => openFirstAvailable(entry));
-}
-
-function materializeHtml(template, marker) {
-    const withMarker = template
-        .replace(/VU_PLACEHOLDER/g, marker)
-        .replace(/\{\{VU\}\}/g, marker);
-
-    if (withMarker !== template) {
-        return withMarker;
-    }
-
-    return `${template}\n<!-- k6-doc-id:${marker} -->`;
-}
-
-function getHeaderValue(headers, headerName) {
-    if (!headers) {
-        return '';
-    }
-
-    const direct = headers[headerName];
-    if (typeof direct === 'string') {
-        return direct;
-    }
-
-    const lower = headers[headerName.toLowerCase()];
-    if (typeof lower === 'string') {
-        return lower;
-    }
-
-    const upper = headers[headerName.toUpperCase()];
-    if (typeof upper === 'string') {
-        return upper;
-    }
-
-    return '';
-}
-
-const HTML_TEMPLATES = loadHtmlTemplates();
+const HTML_TEMPLATES = loadHtmlTemplates(HTML_FIXTURE, HTML_FIXTURE_FILES, HTML_FIXTURES_DIR);
 
 if (HTML_FIXTURE_FILES.length > 0) {
     console.log(`Loaded ${HTML_TEMPLATES.length} HTML fixture(s) for stress run.`);

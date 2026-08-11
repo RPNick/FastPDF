@@ -18,6 +18,7 @@ FastPDF is a TypeScript service that renders HTML to PDF in a headless Chromium 
 - Zod for request validation
 - Pino for structured logging
 - OpenTelemetry + Sentry OTLP for optional telemetry
+- k6 load tests with shared HTML fixture helpers in [load-test/shared.js](load-test/shared.js)
 
 ## API endpoints
 
@@ -138,10 +139,12 @@ npm run test
 
 You can run the stress tests against multiple real HTML fixtures instead of the built-in sample payload.
 
-Set these environment variables when running `load-test/stress.js` or `load-test/auth-and-render.js`:
+Set these environment variables when running `load-test/stress.js`, `load-test/baseline.js`, or `load-test/auth-and-render.js`:
 
 - `HTML_FIXTURES_DIR`: folder that contains your HTML files
 - `HTML_FIXTURE_FILES`: comma-separated file names (or paths) to load
+
+The scripts share fixture-loading and header helpers from [load-test/shared.js](load-test/shared.js).
 
 Example:
 
@@ -195,6 +198,8 @@ src/
     auth/
     pdf-render/
   shared/
+load-test/
+  shared.js
 ```
 
 ## Documentation
