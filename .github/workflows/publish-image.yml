@@ -16,7 +16,7 @@ jobs:
 
       - name: Get package version
         id: package-version
-        run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+        run: echo "version=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
 
       # Docker Hub login (recommended default)
       - name: Login to Docker Hub
