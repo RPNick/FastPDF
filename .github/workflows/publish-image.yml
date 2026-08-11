@@ -18,12 +18,12 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Get package version
-        id: package-version
+        id: package_version
         run: echo "version=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
 
       - name: Ensure package version is set
         run: |
-          if [ -z "${{ steps.package-version.outputs.version }}" ]; then
+          if [ -z "${{ steps.package_version.outputs.version }}" ]; then
             echo "Package version is empty. Aborting."
             exit 1
           fi
@@ -40,9 +40,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fastpdf:${{ steps.package-version.outputs.version }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/fastpdf:${{ steps.package_version.outputs.version }}
 
       - name: Show published image refs
         run: |
-          echo "Published tag: ${{ secrets.DOCKER_USERNAME }}/fastpdf:${{ steps.package-version.outputs.version }}"
+          echo "Published tag: ${{ secrets.DOCKER_USERNAME }}/fastpdf:${{ steps.package_version.outputs.version }}"
           echo "Digest: ${{ steps.build-and-push.outputs.digest }}"
