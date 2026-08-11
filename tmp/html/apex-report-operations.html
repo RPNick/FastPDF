@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ApexCharts Test Report - Operations</title>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --ink: #1f2430;
+            --muted: #5a6475;
+            --paper: #ffffff;
+            --line: #d7deea;
+            --teal: #0f766e;
+            --amber: #f59e0b;
+            --blue: #2563eb;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(180deg, #eef4ff 0%, #f9fbff 100%);
+        }
+
+        .doc {
+            width: 1100px;
+            margin: 20px auto;
+        }
+
+        .page {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            min-height: 1400px;
+            page-break-after: always;
+        }
+
+        .page:last-child {
+            page-break-after: auto;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .sub {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .card-row {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .metric {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        .metric small {
+            color: var(--muted);
+        }
+
+        .metric strong {
+            display: block;
+            margin-top: 4px;
+            font-size: 20px;
+        }
+
+        .grid {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 10px;
+            min-height: 330px;
+        }
+
+        .panel h3 {
+            margin: 0 0 8px;
+            font-size: 15px;
+        }
+
+        .table-wrap {
+            margin-top: 14px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            padding: 9px 10px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        thead th {
+            text-align: left;
+            background: #f4f8ff;
+        }
+
+        @media print {
+            .doc {
+                width: auto;
+                margin: 0;
+            }
+
+            .page {
+                margin: 0;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="doc">
+        <section class="page">
+            <h1>Operations Dashboard Fixture</h1>
+            <p class="sub">Page 1 - Throughput, defects, and utilization charts</p>
+            <div class="card-row" id="ops-summary"></div>
+            <div class="grid">
+                <article class="panel">
+                    <h3>Weekly Throughput</h3>
+                    <div id="throughput-chart"></div>
+                </article>
+                <article class="panel">
+                    <h3>Defect Categories</h3>
+                    <div id="defect-chart"></div>
+                </article>
+            </div>
+        </section>
+
+        <section class="page">
+            <h1>Capacity and SLA</h1>
+            <p class="sub">Page 2 - Site performance and response-time percentile trends</p>
+            <div class="grid">
+                <article class="panel">
+                    <h3>Site Utilization (%)</h3>
+                    <div id="utilization-chart"></div>
+                </article>
+                <article class="panel">
+                    <h3>SLA P95 Response (ms)</h3>
+                    <div id="sla-chart"></div>
+                </article>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Site</th>
+                            <th>Shift</th>
+                            <th>Output</th>
+                            <th>Downtime</th>
+                            <th>SLA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="site-table"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="page">
+            <h1>Backlog and Incident Trends</h1>
+            <p class="sub">Page 3 - Stacked issue flow and incident trendline</p>
+            <div class="grid">
+                <article class="panel">
+                    <h3>Backlog by Team</h3>
+                    <div id="backlog-chart"></div>
+                </article>
+                <article class="panel">
+                    <h3>Incidents per Month</h3>
+                    <div id="incident-chart"></div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const opsData = {
+            summary: [
+                { label: "Total Output", value: "1.83M" },
+                { label: "Average Defect Rate", value: "1.8%" },
+                { label: "On-Time SLA", value: "97.2%" },
+                { label: "Utilization", value: "82.9%" },
+                { label: "Open Incidents", value: "36" }
+            ],
+            weeks: ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"],
+            throughput: [196, 204, 212, 207, 223, 231, 238, 245],
+            defectLabels: ["Packaging", "Assembly", "Labeling", "Calibration"],
+            defects: [38, 27, 16, 19],
+            sites: ["Berlin", "Austin", "Pune", "Johannesburg", "Sao Paulo"],
+            utilization: [84, 79, 88, 74, 81],
+            slaP95: [340, 320, 305, 315, 298, 287],
+            months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+            incidents: [18, 15, 16, 12, 11, 9],
+            backlogOpen: [56, 49, 43, 38, 31],
+            backlogClosed: [42, 46, 51, 58, 63],
+            tableRows: [
+                { site: "Berlin", shift: "A", output: "412K", downtime: "1.9%", sla: "98.2%" },
+                { site: "Austin", shift: "B", output: "381K", downtime: "2.8%", sla: "96.1%" },
+                { site: "Pune", shift: "A", output: "445K", downtime: "1.6%", sla: "98.5%" },
+                { site: "Johannesburg", shift: "C", output: "269K", downtime: "3.1%", sla: "94.7%" },
+                { site: "Sao Paulo", shift: "B", output: "323K", downtime: "2.2%", sla: "97.3%" }
+            ]
+        };
+
+        document.getElementById("ops-summary").innerHTML = opsData.summary
+            .map((m) => `<article class="metric"><small>${m.label}</small><strong>${m.value}</strong></article>`)
+            .join("");
+
+        document.getElementById("site-table").innerHTML = opsData.tableRows
+            .map((r) => `<tr><td>${r.site}</td><td>${r.shift}</td><td>${r.output}</td><td>${r.downtime}</td><td>${r.sla}</td></tr>`)
+            .join("");
+
+        new ApexCharts(document.querySelector("#throughput-chart"), {
+            chart: { type: "line", height: 270, toolbar: { show: false } },
+            series: [{ name: "Output (k)", data: opsData.throughput }],
+            xaxis: { categories: opsData.weeks },
+            stroke: { curve: "smooth", width: 3 },
+            colors: ["#2563eb"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#defect-chart"), {
+            chart: { type: "pie", height: 270 },
+            labels: opsData.defectLabels,
+            series: opsData.defects,
+            colors: ["#0f766e", "#14b8a6", "#f59e0b", "#ef4444"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#utilization-chart"), {
+            chart: { type: "bar", height: 270, toolbar: { show: false } },
+            series: [{ name: "Utilization", data: opsData.utilization }],
+            xaxis: { categories: opsData.sites },
+            yaxis: { max: 100 },
+            plotOptions: { bar: { borderRadius: 5 } },
+            colors: ["#0f766e"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#sla-chart"), {
+            chart: { type: "area", height: 270, toolbar: { show: false } },
+            series: [{ name: "P95 ms", data: opsData.slaP95 }],
+            xaxis: { categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"] },
+            stroke: { curve: "straight", width: 2 },
+            colors: ["#f59e0b"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#backlog-chart"), {
+            chart: { type: "bar", stacked: true, height: 270, toolbar: { show: false } },
+            series: [
+                { name: "Open", data: opsData.backlogOpen },
+                { name: "Closed", data: opsData.backlogClosed }
+            ],
+            xaxis: { categories: ["Team A", "Team B", "Team C", "Team D", "Team E"] },
+            colors: ["#ef4444", "#0f766e"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#incident-chart"), {
+            chart: { type: "line", height: 270, toolbar: { show: false } },
+            series: [{ name: "Incidents", data: opsData.incidents }],
+            xaxis: { categories: opsData.months },
+            markers: { size: 5 },
+            colors: ["#2563eb"]
+        }).render();
+    </script>
+</body>
+
+</html>

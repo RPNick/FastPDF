@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ApexCharts Test Report - Finance</title>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --bg: #f7faf7;
+            --ink: #172121;
+            --muted: #5f6b73;
+            --sheet: #ffffff;
+            --line: #dce6de;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", Arial, sans-serif;
+        }
+
+        .container {
+            width: 1080px;
+            margin: 18px auto;
+        }
+
+        .page {
+            background: var(--sheet);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            min-height: 1380px;
+            margin-bottom: 16px;
+            padding: 22px;
+            page-break-after: always;
+        }
+
+        .page:last-child {
+            page-break-after: auto;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .top span {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .tiles {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .tile {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .tile p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .tile h2 {
+            margin: 5px 0 0;
+            font-size: 22px;
+        }
+
+        .row {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .box {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .box h3 {
+            margin: 0 0 8px;
+            font-size: 15px;
+        }
+
+        .notes {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .note {
+            border: 1px dashed var(--line);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 13px;
+        }
+
+        table {
+            margin-top: 12px;
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            border: 1px solid var(--line);
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid var(--line);
+            padding: 9px 10px;
+        }
+
+        th {
+            text-align: left;
+            background: #f0f6f0;
+        }
+
+        @media print {
+            .container {
+                width: auto;
+                margin: 0;
+            }
+
+            .page {
+                margin: 0;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <section class="page">
+            <div class="top">
+                <h1>Finance Snapshot</h1>
+                <span>Page 1 - Revenue, cost, and margin</span>
+            </div>
+            <div class="tiles" id="finance-tiles"></div>
+            <div class="row">
+                <div class="box">
+                    <h3>Revenue vs Cost (M)</h3>
+                    <div id="rev-cost"></div>
+                </div>
+                <div class="box">
+                    <h3>Expense Mix</h3>
+                    <div id="expense-mix"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="page">
+            <div class="top">
+                <h1>Cash and Forecast</h1>
+                <span>Page 2 - Cash trend and forecast variance</span>
+            </div>
+            <div class="row">
+                <div class="box">
+                    <h3>Cash Balance (M)</h3>
+                    <div id="cash-trend"></div>
+                </div>
+                <div class="box">
+                    <h3>Forecast Variance (%)</h3>
+                    <div id="variance-bars"></div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Budget</th>
+                        <th>Actual</th>
+                        <th>Variance</th>
+                    </tr>
+                </thead>
+                <tbody id="budget-rows"></tbody>
+            </table>
+        </section>
+
+        <section class="page">
+            <div class="top">
+                <h1>Commentary and Ratios</h1>
+                <span>Page 3 - KPI cards and ratio radar</span>
+            </div>
+            <div class="row">
+                <div class="box">
+                    <h3>Financial Ratios</h3>
+                    <div id="ratio-radar"></div>
+                </div>
+                <div class="box">
+                    <h3>Quarterly EBIT (M)</h3>
+                    <div id="ebit-columns"></div>
+                </div>
+            </div>
+            <div class="notes" id="finance-notes"></div>
+        </section>
+    </main>
+
+    <script>
+        const financeData = {
+            tiles: [
+                { label: "Revenue", value: "$24.8M" },
+                { label: "COGS", value: "$11.7M" },
+                { label: "Gross Margin", value: "52.8%" },
+                { label: "Operating Margin", value: "21.3%" }
+            ],
+            months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+            revenue: [3.4, 3.7, 3.8, 4.1, 4.0, 4.2],
+            cost: [1.8, 1.9, 2.0, 2.1, 2.0, 2.1],
+            expenseLabels: ["Payroll", "Cloud", "Marketing", "Facilities", "Other"],
+            expenseMix: [42, 21, 18, 9, 10],
+            cash: [4.2, 4.4, 4.8, 5.1, 5.0, 5.3],
+            varianceLabels: ["Q1", "Q2", "Q3", "Q4"],
+            variance: [2.8, -1.9, 3.2, 1.1],
+            budgets: [
+                { dept: "Engineering", budget: "$4.20M", actual: "$4.33M", variance: "+3.1%" },
+                { dept: "Sales", budget: "$2.70M", actual: "$2.61M", variance: "-3.3%" },
+                { dept: "Marketing", budget: "$1.90M", actual: "$1.98M", variance: "+4.2%" },
+                { dept: "Operations", budget: "$1.40M", actual: "$1.35M", variance: "-3.6%" },
+                { dept: "G&A", budget: "$1.15M", actual: "$1.14M", variance: "-0.9%" }
+            ],
+            ratioLabels: ["Liquidity", "Leverage", "Efficiency", "Profitability", "Coverage"],
+            ratios: [72, 58, 64, 77, 69],
+            ebit: [1.2, 1.4, 1.3, 1.6],
+            notes: [
+                "Cloud costs dipped after reserved-instance consolidation in April.",
+                "Sales productivity improved in Q4 after territory redesign.",
+                "Working-capital cycle shortened by 5 days due to faster collections."
+            ]
+        };
+
+        document.getElementById("finance-tiles").innerHTML = financeData.tiles
+            .map((t) => `<article class="tile"><p>${t.label}</p><h2>${t.value}</h2></article>`)
+            .join("");
+
+        document.getElementById("budget-rows").innerHTML = financeData.budgets
+            .map((b) => `<tr><td>${b.dept}</td><td>${b.budget}</td><td>${b.actual}</td><td>${b.variance}</td></tr>`)
+            .join("");
+
+        document.getElementById("finance-notes").innerHTML = financeData.notes
+            .map((n) => `<article class="note">${n}</article>`)
+            .join("");
+
+        new ApexCharts(document.querySelector("#rev-cost"), {
+            chart: { type: "line", height: 280, toolbar: { show: false } },
+            series: [
+                { name: "Revenue", data: financeData.revenue },
+                { name: "Cost", data: financeData.cost }
+            ],
+            xaxis: { categories: financeData.months },
+            stroke: { width: [3, 3], curve: "smooth" },
+            colors: ["#2563eb", "#f97316"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#expense-mix"), {
+            chart: { type: "donut", height: 280 },
+            labels: financeData.expenseLabels,
+            series: financeData.expenseMix,
+            legend: { position: "bottom" },
+            colors: ["#1d4ed8", "#059669", "#f59e0b", "#7c3aed", "#6b7280"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#cash-trend"), {
+            chart: { type: "area", height: 280, toolbar: { show: false } },
+            series: [{ name: "Cash", data: financeData.cash }],
+            xaxis: { categories: financeData.months },
+            colors: ["#059669"],
+            stroke: { curve: "smooth", width: 3 }
+        }).render();
+
+        new ApexCharts(document.querySelector("#variance-bars"), {
+            chart: { type: "bar", height: 280, toolbar: { show: false } },
+            series: [{ name: "Variance", data: financeData.variance }],
+            xaxis: { categories: financeData.varianceLabels },
+            plotOptions: { bar: { distributed: true, borderRadius: 5 } },
+            colors: ["#16a34a", "#dc2626", "#16a34a", "#16a34a"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#ratio-radar"), {
+            chart: { type: "radar", height: 280 },
+            series: [{ name: "Score", data: financeData.ratios }],
+            labels: financeData.ratioLabels,
+            colors: ["#7c3aed"],
+            yaxis: { max: 100 }
+        }).render();
+
+        new ApexCharts(document.querySelector("#ebit-columns"), {
+            chart: { type: "bar", height: 280, toolbar: { show: false } },
+            series: [{ name: "EBIT", data: financeData.ebit }],
+            xaxis: { categories: ["Q1", "Q2", "Q3", "Q4"] },
+            colors: ["#2563eb"],
+            dataLabels: { enabled: true }
+        }).render();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ApexCharts Test Report - Sales</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --bg: #f4f6fb;
+            --ink: #14213d;
+            --soft: #4c5d7a;
+            --card: #ffffff;
+            --accent: #f15a24;
+            --accent-2: #0b6e4f;
+            --accent-3: #1b65d6;
+            --border: #dbe2ef;
+            --shadow: 0 10px 28px rgba(20, 33, 61, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Manrope", sans-serif;
+            color: var(--ink);
+            background: radial-gradient(circle at top left, #ffffff 0%, var(--bg) 70%);
+        }
+
+        .report {
+            width: 1120px;
+            margin: 24px auto;
+        }
+
+        .page {
+            min-height: 1450px;
+            padding: 28px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            position: relative;
+            page-break-after: always;
+        }
+
+        .page:last-child {
+            page-break-after: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 16px;
+        }
+
+        .title {
+            margin: 0;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .subtitle {
+            margin: 4px 0 0;
+            color: var(--soft);
+            font-size: 15px;
+        }
+
+        .meta {
+            text-align: right;
+            color: var(--soft);
+            font-size: 13px;
+        }
+
+        .cards {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            background: linear-gradient(145deg, #ffffff 0%, #f9fbff 100%);
+        }
+
+        .card .label {
+            color: var(--soft);
+            font-size: 12px;
+        }
+
+        .card .value {
+            margin-top: 8px;
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .charts {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 12px;
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px;
+            min-height: 360px;
+        }
+
+        .panel h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+        }
+
+        .table-wrap {
+            margin-top: 14px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        thead th {
+            background: #f0f5ff;
+            font-weight: 700;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafcff;
+        }
+
+        .kpi-grid {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .kpi {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .kpi .name {
+            color: var(--soft);
+            font-size: 12px;
+        }
+
+        .kpi .stat {
+            margin-top: 6px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        @media print {
+            .report {
+                width: auto;
+                margin: 0;
+            }
+
+            .page {
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="report">
+        <section class="page">
+            <header class="header">
+                <div>
+                    <h1 class="title">Sales Performance Report</h1>
+                    <p class="subtitle">Page 1 - Revenue trend and channel distribution</p>
+                </div>
+                <div class="meta">
+                    <div>FastPDF fixture</div>
+                    <div>Period: Q1-Q4 2025</div>
+                </div>
+            </header>
+
+            <div class="cards" id="summary-cards"></div>
+
+            <div class="charts">
+                <div class="panel">
+                    <h3>Monthly Revenue</h3>
+                    <div id="revenue-line"></div>
+                </div>
+                <div class="panel">
+                    <h3>Revenue by Channel</h3>
+                    <div id="channel-donut"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="page">
+            <header class="header">
+                <div>
+                    <h1 class="title">Regional Breakdown</h1>
+                    <p class="subtitle">Page 2 - Region metrics and account ranking</p>
+                </div>
+                <div class="meta">
+                    <div>Generated from JS object data</div>
+                    <div>All values are demo data</div>
+                </div>
+            </header>
+
+            <div class="charts">
+                <div class="panel">
+                    <h3>Revenue by Region</h3>
+                    <div id="region-bar"></div>
+                </div>
+                <div class="panel">
+                    <h3>Growth by Region (%)</h3>
+                    <div id="growth-radar"></div>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Account</th>
+                            <th>Segment</th>
+                            <th>Revenue</th>
+                            <th>Margin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="account-rows"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="page">
+            <header class="header">
+                <div>
+                    <h1 class="title">Pipeline and Conversion</h1>
+                    <p class="subtitle">Page 3 - Funnel, conversion, and KPI cards</p>
+                </div>
+                <div class="meta">
+                    <div>Fixture for multi-page PDF validation</div>
+                    <div>Charts + cards + table layout</div>
+                </div>
+            </header>
+
+            <div class="charts">
+                <div class="panel">
+                    <h3>Quarterly Pipeline (USD)</h3>
+                    <div id="pipeline-area"></div>
+                </div>
+                <div class="panel">
+                    <h3>Lead Funnel</h3>
+                    <div id="funnel-bar"></div>
+                </div>
+            </div>
+
+            <div class="kpi-grid" id="kpi-grid"></div>
+        </section>
+    </main>
+
+    <script>
+        const reportData = {
+            summary: [
+                { label: "Total Revenue", value: "$8.42M" },
+                { label: "Average Deal", value: "$42.8K" },
+                { label: "Win Rate", value: "31.4%" },
+                { label: "Retention", value: "92.1%" }
+            ],
+            monthlyRevenue: [380, 420, 510, 470, 550, 630, 690, 740, 720, 810, 860, 930],
+            channels: [44, 31, 17, 8],
+            channelLabels: ["Direct", "Partner", "Marketplace", "Reseller"],
+            regions: ["North America", "EMEA", "APAC", "LATAM"],
+            regionRevenue: [3.25, 2.17, 1.84, 1.16],
+            regionGrowth: [18, 14, 22, 11],
+            accounts: [
+                { name: "Aurelia Health", segment: "Enterprise", revenue: "$630K", margin: "39%" },
+                { name: "Northtrail Energy", segment: "Mid-Market", revenue: "$420K", margin: "31%" },
+                { name: "BlueHarbor Retail", segment: "Enterprise", revenue: "$405K", margin: "28%" },
+                { name: "Stonebridge AI", segment: "SMB", revenue: "$292K", margin: "25%" },
+                { name: "Crescent Ops", segment: "Mid-Market", revenue: "$250K", margin: "33%" }
+            ],
+            pipeline: [1.1, 1.4, 1.9, 2.3],
+            funnelStages: [2200, 980, 430, 190],
+            funnelLabels: ["Leads", "Qualified", "Proposals", "Won"],
+            kpis: [
+                { name: "Sales Cycle", stat: "44 days" },
+                { name: "CAC Payback", stat: "7.8 months" },
+                { name: "NRR", stat: "118%" },
+                { name: "Upsell Rate", stat: "23%" },
+                { name: "Forecast Accuracy", stat: "89%" },
+                { name: "P95 Deal Size", stat: "$128K" }
+            ]
+        };
+
+        const numberOptions = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+
+        document.getElementById("summary-cards").innerHTML = reportData.summary
+            .map(
+                (item) =>
+                    `<article class="card"><div class="label">${item.label}</div><div class="value">${item.value}</div></article>`
+            )
+            .join("");
+
+        document.getElementById("account-rows").innerHTML = reportData.accounts
+            .map(
+                (row) =>
+                    `<tr><td>${row.name}</td><td>${row.segment}</td><td>${row.revenue}</td><td>${row.margin}</td></tr>`
+            )
+            .join("");
+
+        document.getElementById("kpi-grid").innerHTML = reportData.kpis
+            .map((kpi) => `<article class="kpi"><div class="name">${kpi.name}</div><div class="stat">${kpi.stat}</div></article>`)
+            .join("");
+
+        new ApexCharts(document.querySelector("#revenue-line"), {
+            chart: { type: "line", height: 300, toolbar: { show: false } },
+            stroke: { width: 3, curve: "smooth" },
+            series: [{ name: "Revenue (k)", data: reportData.monthlyRevenue }],
+            xaxis: {
+                categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+            },
+            colors: ["#1b65d6"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#channel-donut"), {
+            chart: { type: "donut", height: 300 },
+            labels: reportData.channelLabels,
+            series: reportData.channels,
+            colors: ["#1b65d6", "#0b6e4f", "#f15a24", "#8a98b0"],
+            legend: { position: "bottom" }
+        }).render();
+
+        new ApexCharts(document.querySelector("#region-bar"), {
+            chart: { type: "bar", height: 300, toolbar: { show: false } },
+            series: [{ name: "Revenue (M)", data: reportData.regionRevenue }],
+            xaxis: { categories: reportData.regions },
+            plotOptions: { bar: { borderRadius: 6, columnWidth: "48%" } },
+            dataLabels: {
+                enabled: true,
+                formatter: (val) => "$" + val.toLocaleString(undefined, numberOptions) + "M"
+            },
+            colors: ["#f15a24"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#growth-radar"), {
+            chart: { type: "radar", height: 300 },
+            series: [{ name: "YoY Growth", data: reportData.regionGrowth }],
+            labels: reportData.regions,
+            yaxis: { max: 30, tickAmount: 6 },
+            colors: ["#0b6e4f"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#pipeline-area"), {
+            chart: { type: "area", height: 300, toolbar: { show: false } },
+            series: [{ name: "Pipeline (M)", data: reportData.pipeline }],
+            xaxis: { categories: ["Q1", "Q2", "Q3", "Q4"] },
+            stroke: { curve: "smooth", width: 3 },
+            fill: { type: "gradient", gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.08 } },
+            colors: ["#1b65d6"]
+        }).render();
+
+        new ApexCharts(document.querySelector("#funnel-bar"), {
+            chart: { type: "bar", height: 300, toolbar: { show: false } },
+            series: [{ name: "Count", data: reportData.funnelStages }],
+            xaxis: { categories: reportData.funnelLabels },
+            plotOptions: { bar: { distributed: true, borderRadius: 6 } },
+            colors: ["#1b65d6", "#2f80ed", "#5c9ef2", "#8ab8f5"]
+        }).render();
+    </script>
+</body>
+
+</html>

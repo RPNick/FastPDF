@@ -1,0 +1,28 @@
+### FastPDF local API requests
+@baseUrl = http://localhost:2626
+@password = K7mN9pQwXyZ2vB4jF6sH8tL1cD3eR5uG
+
+### Health check
+GET {{baseUrl}}/health
+
+### Authenticate
+# @name authenticate
+POST {{baseUrl}}/authenticate
+Content-Type: application/json
+
+{
+  "password": "{{password}}"
+}
+
+### Render PDF
+@token = {{authenticate.response.body.$.token}}
+
+POST {{baseUrl}}/pdf-render
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept: application/pdf
+
+{
+  "html": "<html><body><h1>Hello from FastPDF</h1><p>This PDF was generated locally.</p></body></html>",
+  "filename": "local-test"
+}

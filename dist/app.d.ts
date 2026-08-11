@@ -1,0 +1,3 @@
+import type { Env } from './env';
+export declare function setupApp(env: Env): Promise<import("fastify").FastifyInstance<import("http").Server<typeof import("http").IncomingMessage, typeof import("http").ServerResponse>, import("http").IncomingMessage, import("http").ServerResponse<import("http").IncomingMessage>, import("fastify").FastifyBaseLogger, import("fastify").FastifyTypeProviderDefault>>;
+//# sourceMappingURL=app.d.ts.map
