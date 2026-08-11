@@ -136,6 +136,29 @@ function materializeHtml(template, marker) {
     return `${template}\n<!-- k6-doc-id:${marker} -->`;
 }
 
+function getHeaderValue(headers, headerName) {
+    if (!headers) {
+        return '';
+    }
+
+    const direct = headers[headerName];
+    if (typeof direct === 'string') {
+        return direct;
+    }
+
+    const lower = headers[headerName.toLowerCase()];
+    if (typeof lower === 'string') {
+        return lower;
+    }
+
+    const upper = headers[headerName.toUpperCase()];
+    if (typeof upper === 'string') {
+        return upper;
+    }
+
+    return '';
+}
+
 const HTML_TEMPLATES = loadHtmlTemplates();
 
 if (HTML_FIXTURE_FILES.length > 0) {
@@ -191,7 +214,7 @@ export default function (data) {
 
     const res = http.post(
         `${BASE_URL}/pdf-render`,
-        JSON.stringify({ html }),
+        JSON.stringify({ html, filename: `test-vu${__VU}-iter${__ITER}` }),
         {
             headers: {
                 'Content-Type': 'application/json',
@@ -256,7 +279,7 @@ export default function (data) {
     if (is5xx) serverErrorCount.add(1);
 
     if (!is200 && __VU === 1 && non200SamplesLogged < 20) {
-        const requestId = res.headers['x-request-id'] || res.headers['X-Request-Id'] || 'n/a';
+        const requestId = getHeaderValue(res.headers, 'x-request-id') || 'n/a';
         const body = typeof res.body === 'string' ? res.body.slice(0, 500) : '[non-text response body]';
         non200SamplesLogged += 1;
         console.error(`NON200_SAMPLE #${non200SamplesLogged} status=${res.status} requestId=${requestId} body=${body}`);
@@ -265,7 +288,7 @@ export default function (data) {
     const ok = check(res, {
         'render: status 200': (r) => r.status === 200,
         'render: content-type pdf (for 200)': (r) =>
-            r.status !== 200 || (r.headers['Content-Type'] || '').includes('application/pdf'),
+            r.status !== 200 || getHeaderValue(r.headers, 'content-type').includes('application/pdf'),
         'render: rate-limited in aware mode': (r) =>
             !RATE_LIMIT_AWARE || r.status === 200 || r.status === 429,
     });
