@@ -4,6 +4,7 @@ import fastifyAuth from '@fastify/auth';
 import fastifyRateLimit from '@fastify/rate-limit';
 import PdfRenderModule from './modules/pdf-render/pdf-render.module';
 import AuthModule from './modules/auth/auth.module';
+import { logUnhandledException } from './telemetry';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { Env } from './env';
 
@@ -89,7 +90,17 @@ export async function setupApp(env: Env) {
             });
         }
 
-        reply.code(err?.statusCode || 500);
+        const statusCode = err?.statusCode || 500;
+        if (statusCode >= 500) {
+            logUnhandledException(err, {
+                'http.method': request.method,
+                'http.status_code': statusCode,
+                'http.target': request.url,
+                'request.id': request.id,
+            });
+        }
+
+        reply.code(statusCode);
         return "Server Error: " + (err?.message || 'An unexpected error occurred');
     })
 
