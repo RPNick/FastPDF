@@ -48,7 +48,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: surenick/fast-pdf
+          images: ${{ secrets.DOCKER_USERNAME }}/fast-pdf
           tags: |
             type=raw,value=latest
             type=raw,value=${{ steps.package_version.outputs.version }}
