@@ -1,6 +1,6 @@
 {
   "name": "fast-pdf",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "HTML to PDF conversion service using Fastify and Puppeteer",
   "main": "dist/server.js",
   "scripts": {
@@ -24,6 +24,7 @@
     "@fastify/auth": "^5.0.4",
     "@fastify/jwt": "^10.1.0",
     "@fastify/rate-limit": "^11.2.0",
+    "@opentelemetry/instrumentation": "^0.221.0",
     "@sentry/node": "^10.70.0",
     "dotenv": "^17.4.2",
     "fastify": "^5.8.5",
